@@ -32,21 +32,36 @@ namespace TelegramBot
 
             Log.Information("APPLICATION STARTING...");
 
-            var builder = new HostBuilder()
-                          .UseSystemd()
-                          .ConfigureAppConfiguration((context, configuration) => configuration.AddJsonFile("Properties/appsettings.json"))
-                          .ConfigureServices((context, services) =>
-                          {
-                              services.AddOptions()
-                                      .AddHostedService<BotService>()
-                                      .AddSingleton<ITelegramBotClient>(new TelegramBotClient(context.Configuration["TelegramBot:ApiToken"]))
-                                      .AddScheduleParser(context.Configuration["Parser:ScheduleFile"]);
+            IHost host;
 
-                              LocalizationManager.DefaultLanguage = new CultureInfo(context.Configuration["Localization:Language"]);
-                              LocalizationManager.Culture  = new CultureInfo(context.Configuration["Localization:Culture"]);
-                          });
+            try
+            {
+                Log.Information("BUILDING HOST");
 
-            using var host = builder.Build();
+                var builder = new HostBuilder()
+                              .UseSystemd()
+                              .ConfigureAppConfiguration((context, configuration) => configuration.AddJsonFile("Properties/appsettings.json"))
+                              .ConfigureServices((context, services) =>
+                              {
+                                  services.AddOptions()
+                                          .AddHostedService<BotService>()
+                                          .AddSingleton<ITelegramBotClient>(new TelegramBotClient(context.Configuration["TelegramBot:ApiToken"]))
+                                          .AddScheduleParser(context.Configuration["Parser:ScheduleFile"]);
+
+                                  LocalizationManager.DefaultLanguage = new CultureInfo(context.Configuration["Localization:Language"]);
+                                  LocalizationManager.Culture         = new CultureInfo(context.Configuration["Localization:Culture"]);
+                              });
+
+                host = builder.Build();
+            }
+            catch (Exception e)
+            {
+                Log.Fatal(e, "FAILED TO BUILD HOST");
+
+                Log.CloseAndFlush();
+
+                return;
+            }
 
             try
             {
@@ -55,9 +70,13 @@ namespace TelegramBot
                 Log.Information("APPLICATION STARTED");
                 Log.Information("Press Ctrl+C to stop");
             }
-            catch (Exception exception)
+            catch (Exception e)
             {
-                Log.Fatal(exception, "APPLICATION FAILED TO START");
+                Log.Fatal(e, "APPLICATION FAILED TO START");
+
+                Log.CloseAndFlush();
+
+                return;
             }
 
             try
@@ -66,12 +85,11 @@ namespace TelegramBot
 
                 Log.Information("APPLICATION FINISHED");
             }
-            catch (Exception exception)
+
+            catch (Exception e)
             {
-                Log.Fatal(exception, "");
-            }
-            finally
-            {
+                Log.Fatal(e, "APPLICATION CRASHED DURING RUNTIME");
+
                 Log.CloseAndFlush();
             }
         }

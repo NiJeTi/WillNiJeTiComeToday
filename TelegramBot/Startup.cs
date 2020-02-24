@@ -53,6 +53,8 @@ namespace TelegramBot
                               });
 
                 host = builder.Build();
+
+                Log.Information("HOST BUILD SUCCEED");
             }
             catch (Exception e)
             {

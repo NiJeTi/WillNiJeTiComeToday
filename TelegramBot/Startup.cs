@@ -42,7 +42,7 @@ namespace TelegramBot
                                       .AddSingleton<ITelegramBotClient>(new TelegramBotClient(context.Configuration["TelegramBot:ApiToken"]))
                                       .AddScheduleParser(context.Configuration["Parser:ScheduleFile"]);
 
-                              LocalizationManager.Language = new CultureInfo(context.Configuration["Localization:Language"]);
+                              LocalizationManager.DefaultLanguage = new CultureInfo(context.Configuration["Localization:Language"]);
                               LocalizationManager.Culture  = new CultureInfo(context.Configuration["Localization:Culture"]);
                           });
 

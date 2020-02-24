@@ -5,8 +5,8 @@ using ScheduleParser;
 
 using Serilog;
 using Serilog.Events;
+using Serilog.Formatting.Compact;
 using Serilog.Formatting.Display;
-using Serilog.Formatting.Json;
 
 using System;
 using System.Collections.Generic;
@@ -36,6 +36,7 @@ namespace TelegramBot
 
         private readonly ITelegramBotClient bot;
 
+        private readonly string   subjectName;
         private readonly string[] admins;
         private readonly string[] whitelistedUsers;
 
@@ -57,13 +58,15 @@ namespace TelegramBot
 
             messageLogger = new LoggerConfiguration()
                             .Enrich.FromLogContext()
-                            .WriteTo.File(new JsonFormatter(),
+                            .WriteTo.File(new RenderedCompactJsonFormatter(),
                                           "Logs/MessageLog.json",
-                                          LogEventLevel.Information)
+                                          LogEventLevel.Information,
+                                          rollOnFileSizeLimit: true)
                             .CreateLogger();
 
             this.bot = bot;
 
+            subjectName      = configuration.GetSection("TelegramBot:SubjectName").Get<string>();
             admins           = configuration.GetSection("TelegramBot:Admins").Get<string[]>();
             whitelistedUsers = configuration.GetSection("TelegramBot:WhitelistedUsers").Get<string[]>();
 
@@ -105,7 +108,7 @@ namespace TelegramBot
             {
                 LogMessage(message, true);
 
-                await Response(message.Chat, LocalizationManager.GetLocalizedText("StrangerResponse"));
+                await Response(message.Chat, LocalizationManager.GetLocalizedText("StrangerResponse", message.Chat.Id));
             }
         }
 
@@ -116,17 +119,17 @@ namespace TelegramBot
                 switch (message.Text)
                 {
                     case "/today":
-                        await InitializeCommand(new Check(parserCore), message, true, DateTime.Today);
+                        await InitializeCommand(new Check(parserCore, subjectName, message.Chat.Id), message, true, DateTime.Today);
 
                         break;
 
                     case "/tomorrow":
-                        await InitializeCommand(new Check(parserCore), message, true, DateTime.Today.AddDays(1d).Date);
+                        await InitializeCommand(new Check(parserCore, subjectName, message.Chat.Id), message, true, DateTime.Today.AddDays(1d).Date);
 
                         break;
 
                     case "/check":
-                        await InitializeCommand(new Check(parserCore), message);
+                        await InitializeCommand(new Check(parserCore, subjectName, message.Chat.Id), message);
 
                         break;
                     case "/language":
@@ -134,30 +137,30 @@ namespace TelegramBot
                         {
                             new []
                             {
-                                InlineKeyboardButton.WithCallbackData(LocalizationManager.GetLocalizedText("LanguageEng"), "en-US"),
-                                InlineKeyboardButton.WithCallbackData(LocalizationManager.GetLocalizedText("LanguageRus"), "ru-RU")
+                                InlineKeyboardButton.WithCallbackData(LocalizationManager.GetLocalizedText("LanguageEng", message.Chat.Id), "en-US"),
+                                InlineKeyboardButton.WithCallbackData(LocalizationManager.GetLocalizedText("LanguageRus", message.Chat.Id), "ru-RU")
                             }
                         });
 
-                        await Response(message.Chat, LocalizationManager.GetLocalizedText("LanguageSelect"), langugageSelector);
+                        await Response(message.Chat, LocalizationManager.GetLocalizedText("LanguageSelect", message.Chat.Id), langugageSelector);
 
                         break;
                     case "/update":
                         if (!admins.Contains(message.Chat.Username))
-                            await Response(message.Chat, LocalizationManager.GetLocalizedText("NoPermission"));
+                            await Response(message.Chat, LocalizationManager.GetLocalizedText("NoPermission", message.Chat.Id));
                         else
-                            await InitializeCommand(new UpdateSchedule(parserCore, bot, executionCancellationToken), message);
+                            await InitializeCommand(new UpdateSchedule(parserCore, bot, executionCancellationToken, message.Chat.Id), message);
 
                         break;
                     default:
-                        await Response(message.Chat, LocalizationManager.GetLocalizedText("Usage"));
+                        await Response(message.Chat, LocalizationManager.GetLocalizedText("Usage", message.Chat.Id));
 
                         break;
                 }
             }
             else
             {
-                await Response(message.Chat, LocalizationManager.GetLocalizedText("Usage"));
+                await Response(message.Chat, LocalizationManager.GetLocalizedText("Usage", message.Chat.Id));
             }
         }
 
@@ -202,9 +205,9 @@ namespace TelegramBot
         {
             var query = e.CallbackQuery;
 
-            LocalizationManager.Language = new CultureInfo(query.Data);
+            LocalizationManager.SetLanguage(query.Message.Chat.Id, new CultureInfo(query.Data));
 
-            await Response(query.Message.Chat, LocalizationManager.GetLocalizedText("LanguageSelected"));
+            await Response(query.Message.Chat, LocalizationManager.GetLocalizedText("LanguageSelected", query.Message.Chat.Id));
         }
 
         private async Task Response(Chat responseChat, string responseText, IReplyMarkup? replyMarkup = null)

@@ -97,8 +97,6 @@ namespace TelegramBot
 
             if (whitelistedUsers.Contains(message.Chat.Username) || admins.Contains(message.Chat.Username))
             {
-                LogMessage(message, false);
-
                 if (longPollQueue.TryGetValue(message.Chat.Id, out var command))
                     await HandleCommand(command, message, message.Chat);
                 else
@@ -106,7 +104,7 @@ namespace TelegramBot
             }
             else
             {
-                LogMessage(message, true);
+                LogUnknownMessage(message);
 
                 await Response(message.Chat, LocalizationManager.GetLocalizedText("StrangerResponse", message.Chat.Id));
             }
@@ -221,18 +219,10 @@ namespace TelegramBot
             logger.Information($"Responded to {GetUsername(responseChat)}:\n{responseText}");
         }
 
-        private void LogMessage(Message recievedMessage, bool warning)
+        private void LogUnknownMessage(Message recievedMessage)
         {
-            if (!warning)
-            {
-                logger.Information($"Message from {GetUsername(recievedMessage.Chat)} [KNOWN]");
-                messageLogger.Information("{@message}", recievedMessage);
-            }
-            else
-            {
-                logger.Warning($"Message from {GetUsername(recievedMessage.Chat)} [UNKNOWN]");
-                messageLogger.Warning("{@message}", recievedMessage);
-            }
+            logger.Warning($"Message from {GetUsername(recievedMessage.Chat)} [UNKNOWN]");
+            messageLogger.Warning("{@message}", recievedMessage);
         }
 
         private static string GetUsername(Chat user) => user.Username == null ? $"[id{user.Id}] {user.FirstName} {user.LastName}" : $"@{user.Username}";

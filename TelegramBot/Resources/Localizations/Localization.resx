@@ -130,7 +130,7 @@
 	  <value>{0}</value>
   </data>
   <data name="NoWork" xml:space="preserve">
-	  <value>{0}</value>
+	  <value>{0}{1}</value>
   </data>
   <data name="NotADate" xml:space="preserve">
     <value />
@@ -160,7 +160,7 @@
     <value />
   </data>
   <data name="HasWork" xml:space="preserve">
-	  <value>{0}</value>
+	  <value>{0}{1}</value>
   </data>
   <data name="LanguageEng" xml:space="preserve">
 	  <value />

@@ -134,7 +134,7 @@
     <value>Enter desired date in format `{0}`</value>
   </data>
   <data name="NoWork" xml:space="preserve">
-    <value>NiJeTi will not come to work on *{0}*</value>
+	  <value>{0} will not come to work on *{1}*</value>
   </data>
   <data name="NotADate" xml:space="preserve">
     <value>Maybe this is not a date? I cannot parse it...</value>
@@ -165,7 +165,7 @@ FOR {2}</value>
     <value>No document was attached</value>
   </data>
   <data name="HasWork" xml:space="preserve">
-	  <value>NiJeTi will be at work on _{0}_</value>
+	  <value>{0} will be at work on _{1}_</value>
   </data>
   <data name="LanguageEng" xml:space="preserve">
 	  <value>English</value>

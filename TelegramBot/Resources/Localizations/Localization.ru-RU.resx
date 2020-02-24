@@ -134,7 +134,7 @@
     <value>Введите необходимую дату в формате `{0}`</value>
   </data>
   <data name="NoWork" xml:space="preserve">
-    <value>NiJeTi не будет на работе *{0}*</value>
+	  <value>{0} не будет на работе *{1}*</value>
   </data>
   <data name="NotADate" xml:space="preserve">
     <value>Не могу разобрать... Может это и не дата вовсе?</value>
@@ -165,7 +165,7 @@
 	  <value>и</value>
   </data>
   <data name="HasWork" xml:space="preserve">
-	  <value>NiJeTi будет на работе _{0}_</value>
+	  <value>{0} будет на работе _{1}_</value>
   </data>
   <data name="LanguageEng" xml:space="preserve">
 	  <value>Английский</value>

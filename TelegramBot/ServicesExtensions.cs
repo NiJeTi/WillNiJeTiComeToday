@@ -12,7 +12,7 @@ namespace TelegramBot
         {
             var parserCore = new ParserCore();
 
-            parserCore.SetUp(scheduleFile);
+            parserCore.SetUp($"Resources/{scheduleFile}");
 
             Log.Information("Parser setup successful");
 

@@ -1,8 +1,8 @@
-﻿using System;
+﻿using ScheduleParser;
+
+using System;
 using System.IO;
 using System.Threading;
-
-using ScheduleParser;
 
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -21,20 +21,24 @@ namespace TelegramBot.Commands.Control
         private readonly ITelegramBotClient bot;
         private readonly CancellationToken  cancellationToken;
 
+        private readonly long chatId;
+
         public string Response { get; private set; }
 
-        public UpdateSchedule(ParserCore parserCore, ITelegramBotClient bot, CancellationToken cancellationToken)
+        public UpdateSchedule(ParserCore parserCore, ITelegramBotClient bot, CancellationToken cancellationToken, long chatId)
         {
             this.parserCore        = parserCore;
             this.bot               = bot;
             this.cancellationToken = cancellationToken;
 
+            this.chatId = chatId;
+            
             Response = string.Empty;
         }
 
         public void Prepare()
         {
-            Response = LocalizationManager.GetLocalizedText("FileRequest");
+            Response = LocalizationManager.GetLocalizedText("FileRequest", chatId);
         }
 
         public void Handle(object query)
@@ -48,7 +52,7 @@ namespace TelegramBot.Commands.Control
             {
                 if (Path.GetExtension(message.Document.FileName).ToLower() != ".xlsx")
                 {
-                    Response = LocalizationManager.GetLocalizedText("FileWrongType");
+                    Response = LocalizationManager.GetLocalizedText("FileWrongType", chatId);
 
                     return;
                 }
@@ -61,11 +65,11 @@ namespace TelegramBot.Commands.Control
 
                 parserCore.SetUp(filePath);
 
-                Response = LocalizationManager.GetLocalizedText("ScheduleUpdated");
+                Response = LocalizationManager.GetLocalizedText("ScheduleUpdated", chatId);
             }
             else
             {
-                Response = LocalizationManager.GetLocalizedText("NoDocument");
+                Response = LocalizationManager.GetLocalizedText("NoDocument", chatId);
             }
         }
     }

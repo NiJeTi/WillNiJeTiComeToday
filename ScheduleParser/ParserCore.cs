@@ -45,7 +45,7 @@ namespace ScheduleParser
         {
             var response = new ParserResponse();
 
-            if (day.DayOfWeek == DayOfWeek.Saturday || day.DayOfWeek == DayOfWeek.Sunday)
+            if (day.DayOfWeek == DayOfWeek.Saturday || day.DayOfWeek == DayOfWeek.Sunday || day < FirstDay || day > LastDay)
                 return response;
 
             (int row, int column) = GetDayCoordinates(ref day);

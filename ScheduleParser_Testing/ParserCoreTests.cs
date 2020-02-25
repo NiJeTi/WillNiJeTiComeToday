@@ -4,14 +4,15 @@ using ScheduleParser;
 
 using System;
 using System.Globalization;
+using System.IO;
 
 namespace ScheduleParser_Testing
 {
     [TestFixture]
     internal sealed class ParserCoreTests
     {
-        private const string FirstScheduleFile  = "SampleFiles\\Schedule1.xlsx";
-        private const string SecondScheduleFile = "SampleFiles\\Schedule2.xlsx";
+        private const string FirstScheduleFile  = "Schedule1.xlsx";
+        private const string SecondScheduleFile = "Schedule2.xlsx";
 
         private const string FirstScheduleDay = "10.02.2020";
         private const string LastScheduleDay  = "31.05.2020";
@@ -56,17 +57,19 @@ namespace ScheduleParser_Testing
             Assert.AreEqual(DateTime.Parse(LastScheduleDay), parserCore.LastDay);
         }
 
-        [Test, Order(3)]
+        [Test]
         public void NewSchedule()
         {
             SetupParser();
 
+            File.Copy(FirstScheduleFile, $"_{FirstScheduleFile}");
+
             Assert.DoesNotThrow(() => parserCore.SetUp(SecondScheduleFile));
+
+            File.Move($"_{FirstScheduleFile}", FirstScheduleFile);
         }
 
-        private void SetupParser() => parserCore.SetUp(FirstScheduleFile);
-
-        [Test, Order(2)]
+        [Test]
         public void TwoWeeks()
         {
             SetupParser();
@@ -84,5 +87,23 @@ namespace ScheduleParser_Testing
                 Assert.IsNull(parserResponse.AdditionalDuration, errorMessage);
             }
         }
+
+        [Test]
+        public void OutOfRangeDays()
+        {
+            SetupParser();
+
+            var parserResponse = parserCore.GetScheduleForDay(DateTime.MinValue);
+
+            Assert.IsNull(parserResponse.Duration);
+            Assert.IsNull(parserResponse.AdditionalDuration);
+
+            parserResponse = parserCore.GetScheduleForDay(DateTime.MaxValue);
+
+            Assert.IsNull(parserResponse.Duration);
+            Assert.IsNull(parserResponse.AdditionalDuration);
+        }
+
+        private void SetupParser() => parserCore.SetUp(FirstScheduleFile);
     }
 }
